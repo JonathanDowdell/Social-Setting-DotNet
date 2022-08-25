@@ -1,0 +1,44 @@
+version: '3.1'
+
+#services:
+#  db:
+#    image: mysql
+#    restart: always
+#    environment:
+#      MYSQL_DATABASE: 'db'
+#      MYSQL_USER: 'user'
+#      MYSQL_PASSWORD: 'password'
+#      MYSQL_ROOT_PASSWORD: 'password'
+#    ports:
+#      - '3306:3306'
+#    expose:
+#      - '3306'
+services:
+
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - docker.env
+    networks:
+      - postgres
+
+  pgadmin:
+    links:
+      - postgres:postgres
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - "8080:80"
+    env_file:
+      - docker.env
+    networks:
+      - postgres
+
+
+networks:
+  postgres:
+    driver: bridge
