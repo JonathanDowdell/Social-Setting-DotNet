@@ -15,7 +15,7 @@ public class PostEntity
 
     public DateTime CreationDate { get; set; }
 
-    public ISet<VoteEntity> Votes { get; } = new HashSet<VoteEntity>();
+    public ISet<PostVoteEntity> Votes { get; } = new HashSet<PostVoteEntity>();
 
     public List<CommentEntity> Comments { get; set; } = new();
 

@@ -8,12 +8,14 @@ public class CommentResponse
     {
         this.Id = commentEntity.Id;
         this.Body = commentEntity.Body;
-        this.CreationDate = commentEntity.CreationDate;
         this.Username = commentEntity.User.Username;
+        this.VoteCount = commentEntity.Votes.Sum(votes => (int)votes.VoteDirection);
+        this.CreationDate = commentEntity.CreationDate;
     }
 
     public Guid Id { get; set; }
     public string Body { get; set; }
     public string Username { get; set; }
+    public int VoteCount { get; set; }
     public DateTime CreationDate { get; set; }
 }

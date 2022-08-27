@@ -19,5 +19,6 @@ public class ApplicationApiDbContext: DbContext
     public DbSet<SettingEntity> Settings { get; set; }
     public DbSet<PostEntity> Posts { get; set; }
     public DbSet<CommentEntity> Comments { get; set; }
-    public DbSet<VoteEntity> Votes { get; set; }
+    public DbSet<PostVoteEntity> PostVotes { get; set; }
+    public DbSet<CommentVoteEntity> CommentVotes { get; set; }
 }

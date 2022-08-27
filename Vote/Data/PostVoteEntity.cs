@@ -5,7 +5,7 @@ using Social_Setting.Vote.Model;
 
 namespace Social_Setting.Vote.Data;
 
-public class VoteEntity
+public class PostVoteEntity
 {
     [Key]
     public Guid Id { get; set; }

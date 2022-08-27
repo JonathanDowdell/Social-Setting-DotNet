@@ -34,28 +34,22 @@ public class VoteService : IVoteService
     {
         var postGuid = GuidExtensions.ParseOrThrow(postId);
 
-        var existingVoteEntity = await _apiDbContext.Votes
+        var existingVoteEntity = await _apiDbContext.PostVotes
             .FirstOrDefaultAsync(vote => 
                 vote.User.Id.Equals(currentUser.Id) && 
                 vote.Post.Id.Equals(postGuid) 
                 && vote.VoteDirection.Equals(voteDirection));
 
-        if (existingVoteEntity != null)
-        {
-            throw new SocialSettingException(HttpStatusCode.Conflict, "Vote already exist for post.");
-        }
+        if (existingVoteEntity != null) throw new SocialSettingException(HttpStatusCode.Conflict, "Vote already exist for post.");
 
         var post = await _apiDbContext.Posts
             .FindAsync(postGuid);
 
-        if (post == null)
-        {
-            throw new SocialSettingException(HttpStatusCode.NotFound, "Post Not Found.");
-        }
+        if (post == null) throw new SocialSettingException(HttpStatusCode.NotFound, "Post Not Found.");
 
         await RemoveOppositeVoteFromPostAsync(voteDirection, currentUser, postGuid);
         
-        var voteEntity = new VoteEntity()
+        var voteEntity = new PostVoteEntity()
         {
             Id = Guid.NewGuid(),
             Post = post,
@@ -63,7 +57,7 @@ public class VoteService : IVoteService
             VoteDirection = voteDirection
         };
 
-        _apiDbContext.Votes.Add(voteEntity);
+        _apiDbContext.PostVotes.Add(voteEntity);
         
         await _apiDbContext.SaveChangesAsync();
         
@@ -71,10 +65,10 @@ public class VoteService : IVoteService
 
     private async Task RemoveOppositeVoteFromPostAsync(VoteDirection currentDirection, UserEntity currentUser, Guid postGuid)
     {
-        VoteEntity? existingVoteEntity;
+        PostVoteEntity? existingVoteEntity;
         if (currentDirection.Equals(VoteDirection.Down))
         {
-            existingVoteEntity = await _apiDbContext.Votes
+            existingVoteEntity = await _apiDbContext.PostVotes
                 .FirstOrDefaultAsync(vote => 
                     vote.User.Id.Equals(currentUser.Id) && 
                     vote.Post.Id.Equals(postGuid) 
@@ -82,7 +76,7 @@ public class VoteService : IVoteService
         }
         else
         {
-            existingVoteEntity = await _apiDbContext.Votes
+            existingVoteEntity = await _apiDbContext.PostVotes
                 .FirstOrDefaultAsync(vote => 
                     vote.User.Id.Equals(currentUser.Id) && 
                     vote.Post.Id.Equals(postGuid) 
@@ -91,7 +85,7 @@ public class VoteService : IVoteService
 
         if (existingVoteEntity != null)
         {
-            _apiDbContext.Votes.Remove(existingVoteEntity);
+            _apiDbContext.PostVotes.Remove(existingVoteEntity);
         }
     }
 
@@ -99,39 +93,90 @@ public class VoteService : IVoteService
     {
         var postGuid = GuidExtensions.ParseOrThrow(postId);
         
-        var existingVoteEntity = await _apiDbContext.Votes
+        var existingVoteEntity = await _apiDbContext.PostVotes
             .FirstOrDefaultAsync(vote => 
                 vote.User.Id.Equals(currentUser.Id) && 
                 vote.Post.Id.Equals(postGuid));
 
-        if (existingVoteEntity == null)
-        {
-            throw new SocialSettingException(HttpStatusCode.Conflict, "Vote already exist for post.");
-        }
+        if (existingVoteEntity == null) throw new SocialSettingException(HttpStatusCode.Conflict, "Vote already exist for post.");
 
-        _apiDbContext.Votes.Remove(existingVoteEntity);
+        _apiDbContext.PostVotes.Remove(existingVoteEntity);
 
         await _apiDbContext.SaveChangesAsync();
     }
 
-    public Task UpVoteCommentAsync(string postId, UserEntity currentUser)
+    public async Task UpVoteCommentAsync(string commentId, UserEntity currentUser)
     {
-        var postGuid = GuidExtensions.ParseOrThrow(postId);
+        await VoteForCommentAsync(commentId, currentUser, VoteDirection.Up);
+    }
+
+    public async Task DownVoteCommentAsync(string commentId, UserEntity currentUser)
+    {
+        await VoteForCommentAsync(commentId, currentUser, VoteDirection.Down);
+    }
+
+    public Task RemoveVoteFromCommentAsync(string commentId, UserEntity currentUser)
+    {
         throw new NotImplementedException();
     }
 
-    public Task DownVoteCommentAsync(string postId, UserEntity currentUser)
+    private async Task VoteForCommentAsync(string commentId, UserEntity currentUser, VoteDirection voteDirection)
     {
-        throw new NotImplementedException();
+        var commentGuid = GuidExtensions.ParseOrThrow(commentId);
+
+        var existingVoteEntity = await _apiDbContext.CommentVotes
+            .FirstOrDefaultAsync(vote => 
+                vote.User.Id.Equals(currentUser.Id) &&
+                vote.Comment.Id.Equals(commentGuid) &&
+                vote.VoteDirection.Equals(voteDirection)
+            );
+
+        if (existingVoteEntity != null) throw new SocialSettingException(HttpStatusCode.Conflict, "Vote already exist for comment.");
+
+        var commentEntity = await _apiDbContext.Comments
+            .FindAsync(commentGuid);
+
+        if (commentEntity == null) throw new SocialSettingException(HttpStatusCode.NotFound, "Comment Not Found.");
+
+        await RemoveOppositeVoteFromCommentAsync(voteDirection, currentUser, commentGuid);
+
+        var commentVoteEntity = new CommentVoteEntity()
+        {
+            Id = Guid.NewGuid(),
+            Comment = commentEntity,
+            User = currentUser,
+            VoteDirection = voteDirection
+        };
+
+        _apiDbContext.CommentVotes.Add(commentVoteEntity);
+
+        await _apiDbContext.SaveChangesAsync();
     }
 
-    private Task VoteForCommentAsync(string postId, UserEntity currentUser, VoteDirection voteDirection)
+    private async Task RemoveOppositeVoteFromCommentAsync(VoteDirection currentDirection, UserEntity currentUser, Guid commentGuid)
     {
-        throw new NotImplementedException();
-    }
-    
-    public Task RemoveVoteFromCommentAsync(string postId, UserEntity currentUser)
-    {
-        throw new NotImplementedException();
+        
+        CommentVoteEntity? existingVoteEntity;
+        if (currentDirection.Equals(VoteDirection.Down))
+        {
+            existingVoteEntity = await _apiDbContext.CommentVotes
+                .FirstOrDefaultAsync(vote => 
+                    vote.User.Id.Equals(currentUser.Id) && 
+                    vote.Comment.Id.Equals(commentGuid) 
+                    && vote.VoteDirection.Equals(VoteDirection.Up));
+        }
+        else
+        {
+            existingVoteEntity = await _apiDbContext.CommentVotes
+                .FirstOrDefaultAsync(vote => 
+                    vote.User.Id.Equals(currentUser.Id) && 
+                    vote.Comment.Id.Equals(commentGuid) 
+                    && vote.VoteDirection.Equals(VoteDirection.Down));
+        }
+
+        if (existingVoteEntity != null)
+        {
+            _apiDbContext.CommentVotes.Remove(existingVoteEntity);
+        }
     }
 }

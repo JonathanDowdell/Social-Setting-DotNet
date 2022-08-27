@@ -74,6 +74,7 @@ public class CommentService : ICommentService
         {
             var id = Guid.Parse(postId);
             var comments = await _apiDbContext.Comments
+                .Include(comment => comment.Votes)
                 .Include(comment => comment.User)
                 .Where(comment => comment.Post.Id.Equals(id))
                 .ToArrayAsync();
