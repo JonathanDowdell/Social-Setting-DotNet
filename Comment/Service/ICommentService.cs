@@ -20,4 +20,12 @@ public interface ICommentService
     ///
     /// <returns> An ienumerable of commententity objects</returns>
     public Task<IEnumerable<CommentEntity>> GetCommentsForPostAsync(string postId);
+
+    /// <summary> The RemoveCommentAsync function removes a comment from the database.</summary>
+    ///
+    /// <param name="commentId"> The id of the comment to be updated.</param>
+    /// <param name="currentUser"> The user who is voting</param>
+    ///
+    /// <returns> A commententity.</returns>
+    public Task<CommentEntity> RemoveCommentAsync(string commentId, UserEntity currentUser);
 }

@@ -43,7 +43,7 @@ public class UserController : Microsoft.AspNetCore.Mvc.Controller
     public async Task<ActionResult<TokenResponse>> SignUpUser(SignUpUserRequest signUpUserRequest)
     {
         var userResponse = await _userService.SignUpUserAsync(signUpUserRequest);
-        var tokenResponse = _tokenService.CreateServerToken(userResponse);
+        var tokenResponse = await _tokenService.CreateServerToken(userResponse);
         return Created("/signup", tokenResponse);
     }
     
@@ -54,10 +54,10 @@ public class UserController : Microsoft.AspNetCore.Mvc.Controller
     ///
     /// <returns> A userresponse object.</returns>
     [HttpPost("signin"), AllowAnonymous]
-    public async Task<ActionResult<UserResponse>> SignInUser(SignInUserRequest signInUserRequest)
+    public async Task<ActionResult<TokenResponse>> SignInUser(SignInUserRequest signInUserRequest)
     {
         var userResponse = await _userService.SignInUserAsync(signInUserRequest);
-        var tokenResponse = _tokenService.CreateServerToken(userResponse);
-        return Created("/signin", tokenResponse);
+        var tokenResponse = await _tokenService.CreateServerToken(userResponse);
+        return Ok(tokenResponse);
     }
 }

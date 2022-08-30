@@ -6,9 +6,9 @@ namespace Social_Setting.Token.Service;
 public interface ITokenService
 {
     /// <summary> The CreateServerToken function creates a JWT token for the user.</summary>
-    ///
-    /// <param name="userEntity"> </param>
-    ///
+    /// <param name="currentUser"> </param>
     /// <returns> A tokenResponse object.</returns>
-    TokenResponse CreateServerToken(UserEntity userEntity);
+    Task<TokenResponse> CreateServerToken(UserEntity currentUser);
+
+    Task<TokenResponse> ExchangeRefreshToken(string refreshToken);
 }

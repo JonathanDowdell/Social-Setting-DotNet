@@ -4,6 +4,7 @@ using Social_Setting.Comment.Data;
 using Social_Setting.Comment.Model;
 using Social_Setting.Database;
 using Social_Setting.Exception;
+using Social_Setting.Extension;
 using Social_Setting.User.Data;
 
 namespace Social_Setting.Comment.Service;
@@ -92,5 +93,25 @@ public class CommentService : ICommentService
         {
             throw new SocialSettingException(HttpStatusCode.InternalServerError, e.Message);
         }
+    }
+
+    /// <summary> The RemoveCommentAsync function removes a comment from the database.</summary>
+    ///
+    /// <param name="commentId"> The id of the comment to be updated.</param>
+    /// <param name="currentUser"> The user who is voting</param>
+    ///
+    /// <returns> A commententity.</returns>
+    public async Task<CommentEntity> RemoveCommentAsync(string commentId, UserEntity currentUser)
+    {
+        var commentGuid = GuidExtensions.ParseOrThrow(commentId);
+        var commentEntity = await _apiDbContext.Comments
+            .Include(comment => comment.Votes)
+            .Include(comment => comment.User)
+            .FirstOrDefaultAsync(comment => comment.Id.Equals(commentGuid));
+        if (commentEntity == null) throw new SocialSettingException(HttpStatusCode.NotFound, "Comment Not Found.");
+        if (!commentEntity.User.Id.Equals(currentUser.Id)) throw new SocialSettingException(HttpStatusCode.NotAcceptable, "You don't own this comment.");
+        _apiDbContext.Remove(commentEntity);
+        await _apiDbContext.SaveChangesAsync();
+        return commentEntity;
     }
 }

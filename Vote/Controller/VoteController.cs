@@ -53,4 +53,11 @@ public class VoteController: Microsoft.AspNetCore.Mvc.Controller
         var currentUser = await _userService.GetCurrentUserAsync();
         await _voteService.DownVoteCommentAsync(commentId, currentUser);
     }
+
+    [HttpDelete("comment/{commentId}/vote/{voteId}/remove")]
+    public async Task RemoveVoteFromComment(string voteId)
+    {
+        var currentUser = await _userService.GetCurrentUserAsync();
+        await _voteService.RemoveVoteFromCommentAsync(voteId, currentUser);
+    }
 }

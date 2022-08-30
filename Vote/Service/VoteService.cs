@@ -1,6 +1,5 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
-using Social_Setting.Comment.Data;
 using Social_Setting.Database;
 using Social_Setting.Exception;
 using Social_Setting.Extension;
@@ -20,16 +19,39 @@ public class VoteService : IVoteService
         _apiDbContext = apiDbContext;
     }
 
+    /// <summary> The UpVotePostAsync function is used to upvote a post.</summary>
+    ///
+    /// <param name="postId"> The post to down vote</param>
+    /// <param name="currentUser"> The user who is voting</param>
+    ///
+    /// <returns> A task.</returns>
     public async Task UpVotePostAsync(string postId, UserEntity currentUser)
     {
         await VoteForPostAsync(postId, currentUser, VoteDirection.Up);
     }
 
+    /// <summary> The DownVotePostAsync function downvotes a post.</summary>
+    ///
+    /// <param name="postId"> The post to upvote.</param>
+    /// <param name="currentUser"> The user that is voting</param>
+    ///
+    /// <returns> A task.</returns>
     public async Task DownVotePostAsync(string postId, UserEntity currentUser)
     {
         await VoteForPostAsync(postId, currentUser, VoteDirection.Down);
     }
 
+    /// <summary> The VoteForPostAsync function is used to vote for a post.
+    /// It takes in the current user, and the direction of their vote as parameters.
+    /// It then checks if there is an existing vote for that post by that user, and if so it throws an exception
+    /// with a status code of 409 (conflict). If not it removes any opposite votes from
+    /// the post before adding this new one.</summary>
+    ///
+    /// <param name="postId"> The post id.</param>
+    /// <param name="currentUser"> The user who is voting</param>
+    /// <param name="voteDirection"> </param>
+    ///
+    /// <returns> A task.</returns>
     private async Task VoteForPostAsync(string postId, UserEntity currentUser, VoteDirection voteDirection)
     {
         var postGuid = GuidExtensions.ParseOrThrow(postId);
@@ -63,6 +85,14 @@ public class VoteService : IVoteService
         
     }
 
+    /// <summary> The RemoveOppositeVoteFromPostAsync function removes the opposite vote from a post.</summary>
+    ///
+    /// <param name="currentDirection"> The vote direction of the current user</param>
+    /// <param name="currentUser"> The user who is voting</param>
+    /// <param name="postGuid"> /// the guid of the post to be voted on.
+    /// </param>
+    ///
+    /// <returns> A task.</returns>
     private async Task RemoveOppositeVoteFromPostAsync(VoteDirection currentDirection, UserEntity currentUser, Guid postGuid)
     {
         PostVoteEntity? existingVoteEntity;
@@ -89,6 +119,12 @@ public class VoteService : IVoteService
         }
     }
 
+    /// <summary> The RemoveVoteFromPostAsync function removes a vote from the PostVotes table.</summary>
+    ///
+    /// <param name="postId"> The post id.</param>
+    /// <param name="currentUser"> </param>
+    ///
+    /// <returns> A task that represents the asynchronous operation.</returns>
     public async Task RemoveVoteFromPostAsync(string postId, UserEntity currentUser)
     {
         var postGuid = GuidExtensions.ParseOrThrow(postId);
@@ -105,21 +141,58 @@ public class VoteService : IVoteService
         await _apiDbContext.SaveChangesAsync();
     }
 
+    /// <summary> The UpVoteCommentAsync function upvotes a comment.</summary>
+    ///
+    /// <param name="commentId"> The comment to downvote</param>
+    /// <param name="currentUser"> The user who is voting</param>
+    ///
+    /// <returns> A task.</returns>
     public async Task UpVoteCommentAsync(string commentId, UserEntity currentUser)
     {
         await VoteForCommentAsync(commentId, currentUser, VoteDirection.Up);
     }
 
+    /// <summary> The DownVoteCommentAsync function downvotes a comment.</summary>
+    ///
+    /// <param name="commentId"> The id of the comment to be voted on.</param>
+    /// <param name="currentUser"> The user who is voting</param>
+    ///
+    /// <returns> A task.</returns>
     public async Task DownVoteCommentAsync(string commentId, UserEntity currentUser)
     {
         await VoteForCommentAsync(commentId, currentUser, VoteDirection.Down);
     }
 
-    public Task RemoveVoteFromCommentAsync(string commentId, UserEntity currentUser)
+    /// <summary> The RemoveVoteFromCommentAsync function removes a vote from the comment with the given id.</summary>
+    ///
+    /// <param name="voteId"> The id of the comment to be updated</param>
+    /// <param name="currentUser"> The user who is voting</param>
+    ///
+    /// <returns> A task.</returns>
+    public async Task RemoveVoteFromCommentAsync(string voteId, UserEntity currentUser)
     {
-        throw new NotImplementedException();
+        var voteGuid = GuidExtensions.ParseOrThrow(voteId);
+        var voteEntity = await _apiDbContext.CommentVotes
+            .Include(vote => vote.User)
+            .FirstOrDefaultAsync(vote => vote.Id.Equals(voteGuid));
+        if (voteEntity == null) throw new SocialSettingException(HttpStatusCode.NotFound, "Vote Not Found.");
+        if (!voteEntity.User.Id.Equals(currentUser.Id)) throw new SocialSettingException(HttpStatusCode.NotAcceptable, "You are not the owner of this comment.");
+        _apiDbContext.Remove(voteEntity);
+        await _apiDbContext.SaveChangesAsync();
     }
 
+    /// <summary> The VoteForCommentAsync function is used to vote for a comment.
+    /// It takes in the current user, and the direction of their vote as parameters.
+    /// It then checks if there is an existing vote from that user on that comment,
+    /// and if so it throws an exception with a status code of 409 (conflict).
+    /// If not it removes any opposite votes from the same user on that comment before adding a new one.</summary>
+    ///
+    /// <param name="commentId"> The comment id.</param>
+    /// <param name="currentUser"> The user who is voting</param>
+    /// <param name="voteDirection"> ///     the vote direction.
+    /// </param>
+    ///
+    /// <returns> A task object.</returns>
     private async Task VoteForCommentAsync(string commentId, UserEntity currentUser, VoteDirection voteDirection)
     {
         var commentGuid = GuidExtensions.ParseOrThrow(commentId);
@@ -153,6 +226,14 @@ public class VoteService : IVoteService
         await _apiDbContext.SaveChangesAsync();
     }
 
+    /// <summary> The RemoveOppositeVoteFromCommentAsync function removes the opposite vote from a comment.</summary>
+    ///
+    /// <param name="currentDirection"> The direction of the vote</param>
+    /// <param name="currentUser"> </param>
+    /// <param name="commentGuid"> /// the guid of the comment to be voted on.
+    /// </param>
+    ///
+    /// <returns> A task</returns>
     private async Task RemoveOppositeVoteFromCommentAsync(VoteDirection currentDirection, UserEntity currentUser, Guid commentGuid)
     {
         

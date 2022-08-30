@@ -47,5 +47,17 @@ public class CommentController: Microsoft.AspNetCore.Mvc.Controller
         var commentEntity = await _commentService.CreateCommentAsync(postId, commentRequest, currentUser);
         return Created("/comment", new CommentResponse(commentEntity));
     }
-    
+
+    /// <summary> The RemoveCommentFromPost function removes a comment from a post.</summary>
+    ///
+    /// <param name="commentId"> The id of the comment to be updated</param>
+    ///
+    /// <returns> An actionresult of type commentresponse.</returns>
+    [HttpDelete("{commentId}")]
+    public async Task<ActionResult<CommentResponse>> RemoveCommentFromPost(string commentId)
+    {
+        var currentUser = await _userService.GetCurrentUserAsync();
+        var removedCommentEntity = await _commentService.RemoveCommentAsync(commentId, currentUser);
+        return Ok(new CommentResponse(removedCommentEntity));
+    }
 }
