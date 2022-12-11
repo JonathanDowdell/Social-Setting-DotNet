@@ -21,8 +21,6 @@ builder.Services.AddDbContext<ApplicationApiDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("SocialSettingMariaDbConnectionString");
     Console.WriteLine(connectionString);
-    // options.UseMySQL(connectionString);
-    // options.UseNpgsql(connectionString);
 
     var serviceVersion = ServerVersion.AutoDetect(connectionString);
 
