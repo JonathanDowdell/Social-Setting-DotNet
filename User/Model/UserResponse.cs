@@ -8,10 +8,10 @@ public class UserResponse
     {
         this.Email = userEntity.Email;
         this.Username = userEntity.Username;
-        this.CreationDate = userEntity.CreationDate;
+        this.CreationDate = userEntity.CreationDate.ToString("MM/dd/yyyy HH:mm:ss");
     }
     
-    public UserResponse(string email, string username, DateTime creationDate)
+    public UserResponse(string email, string username, string creationDate)
     {
         Email = email;
         Username = username;
@@ -20,6 +20,6 @@ public class UserResponse
 
     public string Email { get; set; }
     public string Username { get; set; }
-    public DateTime CreationDate { get; set; }
+    public string CreationDate { get; set; }
  
 }

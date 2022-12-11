@@ -26,7 +26,7 @@ public class UserController : Microsoft.AspNetCore.Mvc.Controller
     ///
     ///
     /// <returns> An ienumerable of userresponse objects.</returns>
-    [HttpGet, Authorize]
+    [HttpGet]
     public async Task<ActionResult<IEnumerable<UserResponse>>> GetAllUsers()
     {
         var userEntities = await _userService.GetAllUsersAsync();

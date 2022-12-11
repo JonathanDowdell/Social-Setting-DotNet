@@ -74,7 +74,7 @@ public class UserService: IUserService
     {
         var user = await _apiDbContext.Users
             .Include(u => u.Roles)
-            .FirstOrDefaultAsync(user => user.Email == signInUserRequest.Email);
+            .FirstOrDefaultAsync(user => user.Username == signInUserRequest.Username);
 
         if (user == null)
         {

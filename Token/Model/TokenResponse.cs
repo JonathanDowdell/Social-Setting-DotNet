@@ -2,7 +2,7 @@ namespace Social_Setting.Token.Model;
 
 public class TokenResponse
 {
-    public TokenResponse(string token, string refreshToken, DateTime expireDate)
+    public TokenResponse(string token, string refreshToken, string expireDate)
     {
         Token = token;
         RefreshToken = refreshToken;
@@ -13,5 +13,5 @@ public class TokenResponse
 
     public string RefreshToken { get; set; }
     
-    public DateTime ExpireDate { get; set; }
+    public string ExpireDate { get; set; }
 }

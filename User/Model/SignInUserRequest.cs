@@ -1,13 +1,15 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Social_Setting.User.Model;
 
 public class SignInUserRequest
 {
-    public SignInUserRequest(string email, string password)
+    public SignInUserRequest(string username, string password)
     {
-        Email = email;
-        this.Password = password;
+        Username = username;
+        Password = password;
     }
 
-    public string Email { get; set; }
+    public string Username { get; set; }
     public string Password { get; set; } 
 }

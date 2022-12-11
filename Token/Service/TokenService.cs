@@ -41,7 +41,7 @@ public class TokenService: ITokenService
         var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secretToken));
         var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
 
-        var serverTokenExpireDate = DateTime.Now.AddDays(1);
+        var serverTokenExpireDate = DateTime.Now.AddSeconds(60);;
         
         var serverToken = new JwtSecurityToken(
             claims: claims, 
@@ -53,7 +53,7 @@ public class TokenService: ITokenService
         
         var refreshTokenJwt = await CreateRefreshTokenJwt(currentUser, cred);
 
-        return new TokenResponse(serverTokenJwt, refreshTokenJwt, serverTokenExpireDate);
+        return new TokenResponse(serverTokenJwt, refreshTokenJwt, serverTokenExpireDate.ToString("MM/dd/yyyy HH:mm:ss"));
     }
 
     /// <summary> The CreateRefreshTokenJwt function creates a RefreshToken and JWT token.</summary>

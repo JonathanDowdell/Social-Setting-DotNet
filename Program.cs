@@ -19,9 +19,18 @@ var builder = WebApplication.CreateBuilder(args);
 // builder.Services.AddDbContext<ApplicationApiDbContext>(options => options.UseInMemoryDatabase("Social-Setting"));
 builder.Services.AddDbContext<ApplicationApiDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("SocialSettingConnectionString");
+    var connectionString = builder.Configuration.GetConnectionString("SocialSettingMariaDbConnectionString");
     Console.WriteLine(connectionString);
-    options.UseNpgsql(connectionString);
+    // options.UseMySQL(connectionString);
+    // options.UseNpgsql(connectionString);
+
+    var serviceVersion = ServerVersion.AutoDetect(connectionString);
+
+    options
+        .UseMySql(connectionString, serviceVersion)
+        .LogTo(Console.WriteLine, LogLevel.Information)
+        .EnableSensitiveDataLogging()
+        .EnableDetailedErrors();
 });
 
 // Controllers
@@ -47,12 +56,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         var secretToken = builder.Configuration.GetSection("AppSettings:Token").Value;
+        Console.WriteLine("Checking JWT");
+        Console.WriteLine(secretToken);
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretToken)),
             ValidateIssuer = false,
-            ValidateAudience = false
+            ValidateAudience = false,
         };
     });
 
@@ -66,7 +77,6 @@ builder.Services.AddScoped<IVoteService, VoteService>();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 if (app.Environment.IsDevelopment())
 {
@@ -81,5 +91,6 @@ app.UseAuthorization();
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.MapControllers();
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 app.Run();

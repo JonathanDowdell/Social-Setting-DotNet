@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Social_Setting.Exception;
 
@@ -19,6 +21,9 @@ public class ErrorDetails
 
     public override string ToString()
     {
-        return JsonSerializer.Serialize(this);
+        return JsonSerializer.Serialize(this, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
     }
 }
