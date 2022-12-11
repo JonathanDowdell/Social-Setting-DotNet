@@ -10,6 +10,8 @@ public class SettingEntity
 {
     [Key]
     public Guid Id { get; set; }
+    
+    public string PhotoURL { get; set; }
 
     public string Title { get; set; }
 
