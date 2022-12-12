@@ -11,7 +11,7 @@ using Social_Setting.Database;
 namespace Social_Setting.Migrations
 {
     [DbContext(typeof(ApplicationApiDbContext))]
-    [Migration("20221211160016_Initial")]
+    [Migration("20221212220425_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -91,10 +91,6 @@ namespace Social_Setting.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PhotoURL")
                         .IsRequired()
                         .HasColumnType("longtext");
 
