@@ -7,6 +7,7 @@ using Social_Setting.Post.Data;
 using Social_Setting.Setting.Data;
 using Social_Setting.Setting.Model;
 using Social_Setting.User.Data;
+using Social_Setting.Utils.Model;
 
 namespace Social_Setting.Setting.Service;
 
@@ -29,7 +30,7 @@ public class SettingService : ISettingService
     /// <returns> A settingentity</returns>
     public async Task<SettingEntity> CreateSettingAsync(UserEntity currentUser, CreateSettingRequest createSettingRequest)
     {
-        var newPost = new SettingEntity
+        var settingEntity = new SettingEntity
         {
             Id = Guid.NewGuid(),
             Title = createSettingRequest.Title,
@@ -39,7 +40,7 @@ public class SettingService : ISettingService
             Post = new List<PostEntity>()
         };
 
-        var createdPost = await _apiDbContext.Settings.AddAsync(newPost);
+        var createdSubSettingEntity = await _apiDbContext.Settings.AddAsync(settingEntity);
         
         try
         {
@@ -58,7 +59,7 @@ public class SettingService : ISettingService
             throw new SocialSettingException(HttpStatusCode.InternalServerError, e.Message);
         }
         
-        return createdPost.Entity;
+        return createdSubSettingEntity.Entity;
     }
 
     /// <summary> The GetSettingByNameAsync function returns a setting entity by name.</summary>
@@ -69,7 +70,7 @@ public class SettingService : ISettingService
     public async Task<SettingEntity> GetSettingByNameAsync(string name)
     {
         var settingEntity = await _apiDbContext.Settings
-            .FirstOrDefaultAsync(setting => setting.Title.ToLower() == name.ToLower());
+            .FirstOrDefaultAsync(setting => String.Equals(setting.Title, name, StringComparison.CurrentCultureIgnoreCase));
         if (settingEntity == null)
         {
             throw new SocialSettingException(HttpStatusCode.NotFound, $"{name} not found");
@@ -85,8 +86,25 @@ public class SettingService : ISettingService
     public async Task<IEnumerable<SettingEntity>> GetSettingsByNameAsync(string name)
     {
         var settingEntities = await _apiDbContext.Settings
-            .Where(setting => setting.Title.ToLower().StartsWith(name.ToLower()))
+            .Where(setting => setting.Title.ToLower().Contains(name.ToLower()))
             .ToArrayAsync();
         return settingEntities;
     }
+    
+    /// <summary> The GetAllSubSettings function returns all sub settings for a given setting.</summary>
+    ///
+    /// <param name="pagination"> Pagination object</param>
+    ///
+    /// <returns> A list of settingentity objects.</returns>
+    public async Task<IEnumerable<SettingEntity>> GetAllSubSettings(Pagination pagination)
+    {
+        var settingEntities = await _apiDbContext.Settings
+            .OrderBy(subSetting => subSetting.Title)
+            .Skip(pagination.Skip)
+            .Take(pagination.Take)
+            .ToArrayAsync();
+
+        return settingEntities;
+    }
+
 }

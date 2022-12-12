@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Social_Setting.Setting.Model;
 using Social_Setting.Setting.Service;
 using Social_Setting.User.Service;
+using Social_Setting.Utils.Model;
 
 namespace Social_Setting.Setting.Controller;
 
@@ -60,4 +61,22 @@ public class SettingController : Microsoft.AspNetCore.Mvc.Controller
         var settingEntities = await _settingService.GetSettingsByNameAsync(name);
         return Ok(settingEntities.Select(setting => new SettingResponse(setting)));
     }
+
+    /// <summary> The GetAllSubSettings function returns all sub settings from the database.</summary>
+    ///
+    /// <param name="skip"> The name of the setting to be retrieved</param>
+    /// <param name="take"> The name of the setting to be retrieved</param>
+    /// <returns> All the settings.</returns>
+    [HttpGet, AllowAnonymous]
+    public async Task<ActionResult<IEnumerable<SettingResponse>>> GetAllSubSettings([FromQuery(Name = "Skip")] int skip, [FromQuery(Name = "Take")] int take)
+    {
+        var pagination = new Pagination
+        {
+            Skip = skip,
+            Take = take
+        };
+        var allSubSettingEntities = await _settingService.GetAllSubSettings(pagination);
+        return Ok(allSubSettingEntities.Select(setting => new SettingResponse(setting)));
+    }
+    
 }

@@ -2,6 +2,7 @@ using System.Collections;
 using Social_Setting.Setting.Data;
 using Social_Setting.Setting.Model;
 using Social_Setting.User.Data;
+using Social_Setting.Utils.Model;
 
 namespace Social_Setting.Setting.Service;
 
@@ -29,4 +30,6 @@ public interface ISettingService
     ///
     /// <returns> A settingentity</returns>
     public Task<SettingEntity> CreateSettingAsync(UserEntity currentUser, CreateSettingRequest createSettingRequest);
+
+    public Task<IEnumerable<SettingEntity>> GetAllSubSettings(Pagination pagination);
 }
