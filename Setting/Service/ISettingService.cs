@@ -31,5 +31,10 @@ public interface ISettingService
     /// <returns> A settingentity</returns>
     public Task<SettingEntity> CreateSettingAsync(UserEntity currentUser, CreateSettingRequest createSettingRequest);
 
+    /// <summary> The GetAllSubSettings function returns all sub settings for a given setting.</summary>
+    ///
+    /// <param name="pagination"> Pagination object</param>
+    ///
+    /// <returns> A list of settingentity objects.</returns>
     public Task<IEnumerable<SettingEntity>> GetAllSubSettings(Pagination pagination);
 }
